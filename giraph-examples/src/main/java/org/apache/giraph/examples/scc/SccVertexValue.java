@@ -128,4 +128,9 @@ public class SccVertexValue implements Writable {
     return active;
   }
 
+  @Override
+  public String toString() {
+    return String.valueOf(value);
+  }
+
 }
