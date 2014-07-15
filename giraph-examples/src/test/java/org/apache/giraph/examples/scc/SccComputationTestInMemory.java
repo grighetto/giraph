@@ -20,6 +20,8 @@ package org.apache.giraph.examples.scc;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +62,7 @@ public class SccComputationTestInMemory {
   public static void addVertex(
       TestGraph<LongWritable, SccVertexValue, NullWritable> graph, long id,
       long... outgoingVertices) {
-    graph.addVertex(new LongWritable(id), new SccVertexValue(),
+    graph.addVertex(new LongWritable(id), new SccVertexValue(id),
         makeEdges(outgoingVertices));
   }
 
@@ -69,9 +71,8 @@ public class SccComputationTestInMemory {
     GiraphConfiguration conf = new GiraphConfiguration();
     conf.setComputationClass(SccComputation.class);
     conf.setMasterComputeClass(SccPhaseMasterCompute.class);
-    conf.setMessageCombinerClass(SccMaximumLongMessageCombiner.class);
     conf.setOutEdgesClass(ByteArrayEdges.class);
-    
+
 
     TestGraph<LongWritable, SccVertexValue, NullWritable> graph = new TestGraph<LongWritable, SccVertexValue, NullWritable>(
         conf);
@@ -88,15 +89,22 @@ public class SccComputationTestInMemory {
     addVertex(graph, 25, 20);
     addVertex(graph, 4, 5);
     addVertex(graph, 5, 6);
-    
+
     TestGraph<LongWritable, SccVertexValue, NullWritable> results = InternalVertexRunner.runWithInMemoryOutput(conf, graph);
-    
+
     Map<Long, List<Long>> scc = parse(results);
-    Assert.assertArrayEquals(new Long[]{0l, 1l, 2l, 3l}, scc.get(3l).toArray());
-    Assert.assertArrayEquals(new Long[]{4l}, scc.get(4l).toArray());
-    Assert.assertArrayEquals(new Long[]{5l}, scc.get(5l).toArray());
-    Assert.assertArrayEquals(new Long[]{6l}, scc.get(6l).toArray());
-    Assert.assertArrayEquals(new Long[]{21l, 20l, 23l, 22l, 25l, 24l}, scc.get(25l).toArray());
+
+    List<Long> components = scc.get(3l);
+    Collections.sort(components);
+    Assert.assertEquals(Arrays.asList(0l, 1l, 2l, 3l), components);
+
+    Assert.assertEquals(Arrays.asList(4l), scc.get(4l));
+    Assert.assertEquals(Arrays.asList(5l), scc.get(5l));
+    Assert.assertEquals(Arrays.asList(6l), scc.get(6l));
+
+    components = scc.get(25l);
+    Collections.sort(components);
+    Assert.assertEquals(Arrays.asList(20l, 21l, 22l, 23l, 24l, 25l), components);
   }
 
   private Map<Long, List<Long>> parse(

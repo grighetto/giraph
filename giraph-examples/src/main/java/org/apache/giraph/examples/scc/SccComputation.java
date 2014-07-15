@@ -23,7 +23,6 @@ import static org.apache.giraph.examples.scc.SccPhaseMasterCompute.NEW_MAXIMUM;
 import static org.apache.giraph.examples.scc.SccPhaseMasterCompute.CONVERGED;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.apache.giraph.Algorithm;
 import org.apache.giraph.examples.scc.SccPhaseMasterCompute.Phases;
@@ -59,6 +58,7 @@ public class SccComputation extends
 
     switch (currPhase) {
     case TRANSPOSE :
+      vertexValue.clearParents();
       sendMessageToAllEdges(vertex, vertex.getId());
       break;
     case TRIMMING :
@@ -77,7 +77,6 @@ public class SccComputation extends
       break;
     }
 
-    vertex.voteToHalt();
   }
 
   /**
@@ -91,10 +90,6 @@ public class SccComputation extends
                     Iterable<LongWritable> messages) {
     SccVertexValue vertexValue = vertex.getValue();
     // Keep the ids of the parent nodes to allow for backwards traversal
-    List<Long> parents = vertexValue.getParents();
-    if (parents != null) {
-      parents.clear();
-    }
     for (LongWritable parent : messages) {
       vertexValue.addParent(parent.get());
     }
@@ -152,6 +147,7 @@ public class SccComputation extends
         sendMessageToAllParents(vertex, m);
         aggregate(CONVERGED, new BooleanWritable(true));
         vertexValue.deactivate();
+        vertex.voteToHalt();
         break;
       }
     }

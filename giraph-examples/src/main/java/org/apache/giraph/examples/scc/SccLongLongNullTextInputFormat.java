@@ -46,7 +46,7 @@ public class SccLongLongNullTextInputFormat extends
   @Override
   public TextVertexReader createVertexReader(InputSplit split,
                                              TaskAttemptContext context)
-      throws IOException {
+    throws IOException {
     return new LongLongNullVertexReader();
   }
 
@@ -72,7 +72,7 @@ public class SccLongLongNullTextInputFormat extends
 
     @Override
     protected SccVertexValue getValue(String[] tokens) throws IOException {
-      return new SccVertexValue();
+      return new SccVertexValue(Long.parseLong(tokens[0]));
     }
 
     @Override

@@ -35,12 +35,26 @@ public class SccVertexValue implements Writable {
   private List<Long> parents;
 
   /** Current vertex value **/
-  private long value = -1L;
+  private Long value = null;
 
   /** Indicates whether the vertex was trimmed, hence,
    * it can't be part of the computation anymore.
    */
   private boolean active = true;
+
+  /**
+   * Public constructor required for serialization.
+   */
+  public SccVertexValue() {
+  }
+
+  /**
+   * Constructor
+   * @param value Initial value for this vertex.
+   */
+  public SccVertexValue(long value) {
+    this.value = value;
+  }
 
   @Override
   public void readFields(DataInput in) throws IOException {
@@ -93,6 +107,16 @@ public class SccVertexValue implements Writable {
       parents = new ArrayList<Long>();
     }
     parents.add(vertexId);
+  }
+
+  /**
+   * Clear parents list.
+   */
+  public void clearParents() {
+    if (parents != null) {
+      parents.clear();
+    }
+    parents = null;
   }
 
   /**
