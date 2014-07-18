@@ -1,6 +1,30 @@
 Giraph Change Log
 
 Release 1.1.0 - unreleased
+  GIRAPH-924: Fix checkpointing (edunov via majakabiljo)
+
+  GIRAPH-921: Create ByteValueVertex to store vertex values as bytes without object instance (akyrola via majakabiljo)
+
+  GIRAPH-929: setIfUnset for EnumConfOption (pavanka)  
+
+  GIRAPH-912: Support succinct representation of messages in messagestores (pavanka)
+
+  GIRAPH-903: Detect crashes of Netty threads (edunov via pavanka)
+
+  GIRAPH-925: Unit tests should pass even if zookeeper port not available (edunov via pavanka)
+
+  GIRAPH-713: Provide an option to do request compression (pavanka)
+
+  GIRAPH-923: Upgrade Netty version to a latest stable one (pavanka)
+
+  GIRAPH-916: Wrong number of vertices stored reported to command line (majakabiljo)
+
+  GIRAPH-919: Add worker to worker communication (majakabiljo)
+
+  GIRAPH-922: SimpleEdgeStore has a bug causing NPE (pavanka)
+
+  GIRAPH-915: With BigDataIO some messages can get ignored (majakabiljo via pavanka)
+
   GIRAPH-918: GIRAPH-908 has a small bug reg counting entries (pavanka)
 
   GIRAPH-842: option to dump histogram of memory usage when heap is low on memory (pavanka)

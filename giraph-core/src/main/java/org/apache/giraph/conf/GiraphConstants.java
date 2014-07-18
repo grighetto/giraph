@@ -21,6 +21,7 @@ import org.apache.giraph.aggregators.AggregatorWriter;
 import org.apache.giraph.aggregators.TextAggregatorWriter;
 import org.apache.giraph.combiner.MessageCombiner;
 import org.apache.giraph.comm.messages.InMemoryMessageStoreFactory;
+import org.apache.giraph.comm.messages.MessageEncodeAndStoreType;
 import org.apache.giraph.comm.messages.MessageStoreFactory;
 import org.apache.giraph.edge.ByteArrayEdges;
 import org.apache.giraph.edge.EdgeStoreFactory;
@@ -38,11 +39,13 @@ import org.apache.giraph.factories.MessageValueFactory;
 import org.apache.giraph.factories.VertexIdFactory;
 import org.apache.giraph.factories.VertexValueFactory;
 import org.apache.giraph.graph.Computation;
-import org.apache.giraph.graph.DefaultVertexValueCombiner;
+import org.apache.giraph.graph.DefaultVertex;
 import org.apache.giraph.graph.DefaultVertexResolver;
+import org.apache.giraph.graph.DefaultVertexValueCombiner;
 import org.apache.giraph.graph.Language;
-import org.apache.giraph.graph.VertexValueCombiner;
+import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.graph.VertexResolver;
+import org.apache.giraph.graph.VertexValueCombiner;
 import org.apache.giraph.io.EdgeInputFormat;
 import org.apache.giraph.io.EdgeOutputFormat;
 import org.apache.giraph.io.MappingInputFormat;
@@ -273,7 +276,11 @@ public interface GiraphConstants {
       ClassConfOption.create("giraph.vertexInputFilterClass",
           DefaultVertexInputFilter.class, VertexInputFilter.class,
           "VertexInputFilter class");
-
+  /** Vertex class */
+  ClassConfOption<Vertex> VERTEX_CLASS =
+      ClassConfOption.create("giraph.vertexClass",
+          DefaultVertex.class, Vertex.class,
+          "Vertex class");
   /** VertexOutputFormat class */
   ClassConfOption<VertexOutputFormat> VERTEX_OUTPUT_FORMAT_CLASS =
       ClassConfOption.create("giraph.vertexOutputFormatClass", null,
@@ -556,12 +563,6 @@ public interface GiraphConstants {
       new IntConfOption("giraph.nettyRequestEncoderBufferSize", 32 * ONE_KB,
           "How big to make the encoder buffer?");
 
-  /** Whether or not netty request encoder should use direct byte buffers */
-  BooleanConfOption NETTY_REQUEST_ENCODER_USE_DIRECT_BUFFERS =
-      new BooleanConfOption("giraph.nettyRequestEncoderUseDirectBuffers",
-                            false, "Whether or not netty request encoder " +
-                                   "should use direct byte buffers");
-
   /** Netty client threads */
   IntConfOption NETTY_CLIENT_THREADS =
       new IntConfOption("giraph.nettyClientThreads", 4, "Netty client threads");
@@ -612,6 +613,11 @@ public interface GiraphConstants {
   BooleanConfOption NETTY_SIMULATE_FIRST_RESPONSE_FAILED =
       new BooleanConfOption("giraph.nettySimulateFirstResponseFailed", false,
           "Netty simulate a first response failed");
+
+  /** Netty - set which compression to use */
+  StrConfOption NETTY_COMPRESSION_ALGORITHM =
+      new StrConfOption("giraph.nettyCompressionAlgorithm", "",
+          "Which compression algorithm to use in netty");
 
   /** Max resolve address attempts */
   IntConfOption MAX_RESOLVE_ADDRESS_ATTEMPTS =
@@ -874,6 +880,13 @@ public interface GiraphConstants {
   String RESTART_SUPERSTEP = "giraph.restartSuperstep";
 
   /**
+   * If application is restarted manually we need to specify job ID
+   * to restart from.
+   */
+  StrConfOption RESTART_JOB_ID = new StrConfOption("giraph.restart.jobId",
+      null, "Which job ID should I try to restart?");
+
+  /**
    * Base ZNode for Giraph's state in the ZooKeeper cluster.  Must be a root
    * znode on the cluster beginning with "/"
    */
@@ -1049,13 +1062,14 @@ public interface GiraphConstants {
           "edges every time.");
 
   /**
-   * This option will enable communication optimization for one-to-all
-   * message sending. For multiple target ids on the same machine,
-   * we only send one message to all the targets.
+   * This option will tell which message encode & store enum to use when
+   * combining is not enabled
    */
-  BooleanConfOption ONE_TO_ALL_MSG_SENDING =
-    new BooleanConfOption("giraph.oneToAllMsgSending", false, "Enable " +
-        "one-to-all message sending strategy");
+  EnumConfOption<MessageEncodeAndStoreType> MESSAGE_ENCODE_AND_STORE_TYPE =
+      EnumConfOption.create("giraph.messageEncodeAndStoreType",
+          MessageEncodeAndStoreType.class,
+          MessageEncodeAndStoreType.BYTEARRAY_PER_PARTITION,
+          "Select the message_encode_and_store_type to use");
 
   /**
    * This option can be used to specify if a source vertex present in edge
@@ -1117,5 +1131,17 @@ public interface GiraphConstants {
   IntConfOption HDFS_FILE_CREATION_RETRY_WAIT_MS =
       new IntConfOption("giraph.hdfs.file.creation.retry.wait.ms", 30_000,
           "Milliseconds to wait prior to retrying creation of an HDFS file");
+
+  /** Number of threads for writing and reading checkpoints */
+  IntConfOption NUM_CHECKPOINT_IO_THREADS =
+      new IntConfOption("giraph.checkpoint.io.threads", 8,
+          "Number of threads for writing and reading checkpoints");
+
+  /** Compression algorithm to be used for checkpointing */
+  StrConfOption CHECKPOINT_COMPRESSION_CODEC =
+      new StrConfOption("giraph.checkpoint.compression.codec",
+          "org.apache.hadoop.io.compress.DefaultCodec",
+          "Defines compression algorithm we will be using for " +
+              "storing checkpoint");
 }
 // CHECKSTYLE: resume InterfaceIsTypeCheck

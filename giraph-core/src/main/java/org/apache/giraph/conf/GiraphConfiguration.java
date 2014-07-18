@@ -23,6 +23,7 @@ import org.apache.giraph.combiner.MessageCombiner;
 import org.apache.giraph.edge.OutEdges;
 import org.apache.giraph.edge.ReuseObjectsOutEdges;
 import org.apache.giraph.factories.ComputationFactory;
+import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.graph.VertexValueCombiner;
 import org.apache.giraph.graph.VertexResolver;
 import org.apache.giraph.factories.VertexValueFactory;
@@ -171,6 +172,16 @@ public class GiraphConfiguration extends Configuration
       Class<? extends OutEdges> outEdgesClass) {
     VERTEX_EDGES_CLASS.set(this, outEdgesClass);
   }
+
+  /**
+   * Set the vertex implementation class
+   *
+   * @param vertexClass class of the vertex implementation
+   */
+  public final void setVertexClass(Class<? extends Vertex> vertexClass) {
+    VERTEX_CLASS.set(this, vertexClass);
+  }
+
 
   /**
    * Set the vertex edges class used during edge-based input (if different
@@ -854,9 +865,12 @@ public class GiraphConfiguration extends Configuration
    */
   public ByteBufAllocator getNettyAllocator() {
     if (nettyBufferAllocator == null) {
+      int nArenas = Math.max(GiraphConstants.NETTY_CLIENT_THREADS.get(this),
+          GiraphConstants.NETTY_SERVER_THREADS.get(this));
       if (NETTY_USE_POOLED_ALLOCATOR.get(this)) { // Use pooled allocator
         nettyBufferAllocator = new PooledByteBufAllocator(
-          NETTY_USE_DIRECT_MEMORY.get(this));
+            NETTY_USE_DIRECT_MEMORY.get(this), nArenas, nArenas,
+            8192, 11, 0, 0, 0);
       } else { // Use un-pooled allocator
         // Note: Current default settings create un-pooled heap allocator
         nettyBufferAllocator = new UnpooledByteBufAllocator(
@@ -1173,23 +1187,18 @@ public class GiraphConfiguration extends Configuration
   }
 
   /**
-   * Enable communication optimization for one-to-all messages.
-   */
-  public void enableOneToAllMsgSending() {
-    ONE_TO_ALL_MSG_SENDING.set(this, true);
-  }
-
-  /**
-   * Return if one-to-all messsage sending is enabled.
+   * Return if oneMessageToManyIds encoding can be enabled
    *
-   * @return True if this option is enabled.
+   * @return True if this option is true.
    */
-  public boolean isOneToAllMsgSendingEnabled() {
-    return ONE_TO_ALL_MSG_SENDING.isTrue(this);
+  public boolean useOneMessageToManyIdsEncoding() {
+    return MESSAGE_ENCODE_AND_STORE_TYPE.get(this)
+      .useOneMessageToManyIdsEncoding();
   }
 
   /**
    * Get option whether to create a source vertex present only in edge input
+   *
    * @return CREATE_EDGE_SOURCE_VERTICES option
    */
   public boolean getCreateSourceVertex() {

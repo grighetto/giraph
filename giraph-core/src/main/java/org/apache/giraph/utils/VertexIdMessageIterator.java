@@ -36,4 +36,18 @@ public interface VertexIdMessageIterator<I extends WritableComparable,
    * @return Current message
    */
   M getCurrentMessage();
+
+  /**
+   * Get the serialized size of current message
+   *
+   * @return serialized size of current message
+   */
+  int getCurrentMessageSize();
+
+  /**
+   * Return true of current message is new
+   *
+   * @return true if current message is new
+   */
+  boolean isNewMessage();
 }

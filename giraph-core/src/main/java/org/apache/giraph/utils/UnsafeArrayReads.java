@@ -55,7 +55,7 @@ public class UnsafeArrayReads extends UnsafeReads {
       UNSAFE.arrayBaseOffset(byte[].class);
 
   /** Byte buffer */
-  private final byte[] buf;
+  protected byte[] buf;
 
   /**
    * Constructor
@@ -82,6 +82,11 @@ public class UnsafeArrayReads extends UnsafeReads {
   @Override
   public int available() {
     return (int) (bufLength - pos);
+  }
+
+  @Override
+  public boolean endOfInput() {
+    return available() == 0;
   }
 
 
