@@ -17,11 +17,11 @@
  */
 package org.apache.giraph.examples.scc;
 
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.hadoop.io.Writable;
 
@@ -32,10 +32,10 @@ import org.apache.hadoop.io.Writable;
 public class SccVertexValue implements Writable {
 
   /** Vertex's parents **/
-  private List<Long> parents;
+  private LongArrayList parents;
 
   /** Current vertex value **/
-  private Long value = null;
+  private long value = Long.MIN_VALUE;
 
   /** Indicates whether the vertex was trimmed, hence,
    * it can't be part of the computation anymore.
@@ -77,7 +77,7 @@ public class SccVertexValue implements Writable {
     int size = parents == null ? 0 : parents.size();
     out.writeInt(size);
     if (size != 0) {
-      for (Long incomingId : parents) {
+      for (long incomingId : parents) {
         out.writeLong(incomingId);
       }
     }
@@ -91,7 +91,7 @@ public class SccVertexValue implements Writable {
    * returns null.
    * @return List of the vertex's parents.
    */
-  public List<Long> getParents() {
+  public LongArrayList getParents() {
     return parents;
   }
 
@@ -99,12 +99,12 @@ public class SccVertexValue implements Writable {
    * Adds a vertex id to the list of parent vertices.
    * @param vertexId It of the parent vertex.
    */
-  public void addParent(Long vertexId) {
+  public void addParent(long vertexId) {
     // Initialize the list of parent vertices only when one attempts to add
     // the first item, so we save some memory on vertices that have no incoming
     // edges
     if (parents == null) {
-      parents = new ArrayList<Long>();
+      parents = new LongArrayList();
     }
     parents.add(vertexId);
   }
@@ -113,9 +113,6 @@ public class SccVertexValue implements Writable {
    * Clear parents list.
    */
   public void clearParents() {
-    if (parents != null) {
-      parents.clear();
-    }
     parents = null;
   }
 
@@ -124,7 +121,7 @@ public class SccVertexValue implements Writable {
    * same vertex value are part of the same component.
    * @param value Vertex value.
    */
-  public void set(Long value) {
+  public void set(long value) {
     this.value = value;
   }
 
@@ -133,7 +130,7 @@ public class SccVertexValue implements Writable {
    * the same vertex value are part of the same component.
    * @return Current vertex value.
    */
-  public Long get() {
+  public long get() {
     return value;
   }
 

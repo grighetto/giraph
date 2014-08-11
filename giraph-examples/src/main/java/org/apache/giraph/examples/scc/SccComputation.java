@@ -41,6 +41,23 @@ import org.apache.hadoop.io.NullWritable;
 public class SccComputation extends
     BasicComputation<LongWritable, SccVertexValue, NullWritable, LongWritable> {
 
+  /**
+   * Current phase of the computation as defined in SccPhaseMasterCompute
+   */
+  private Phases currPhase;
+
+  /**
+   * Reusable object to encapsulate message value, in order to avoid
+   * creating a new instance every time a message is sent.
+   */
+  private LongWritable messageValue = new LongWritable();
+
+  @Override
+  public void preSuperstep() {
+    IntWritable phaseInt = getAggregatedValue(PHASE);
+    currPhase = SccPhaseMasterCompute.getPhase(phaseInt);
+  }
+
   @Override
   public void compute(
       Vertex<LongWritable, SccVertexValue, NullWritable> vertex,
@@ -52,9 +69,6 @@ public class SccComputation extends
       vertex.voteToHalt();
       return;
     }
-
-    IntWritable phaseInt = getAggregatedValue(PHASE);
-    Phases currPhase = SccPhaseMasterCompute.getPhase(phaseInt);
 
     switch (currPhase) {
     case TRANSPOSE :
@@ -99,7 +113,8 @@ public class SccComputation extends
     if (vertex.getNumEdges() == 0 || vertexValue.getParents() == null) {
       vertexValue.deactivate();
     } else {
-      sendMessageToAllEdges(vertex, new LongWritable(vertexValue.get()));
+      messageValue.set(vertexValue.get());
+      sendMessageToAllEdges(vertex, messageValue);
     }
   }
 
@@ -116,7 +131,8 @@ public class SccComputation extends
     SccVertexValue vertexValue = vertex.getValue();
     boolean changed = setMaxValue(vertexValue, messages);
     if (changed) {
-      sendMessageToAllEdges(vertex, new LongWritable(vertexValue.get()));
+      messageValue.set(vertexValue.get());
+      sendMessageToAllEdges(vertex, messageValue);
       aggregate(NEW_MAXIMUM, new BooleanWritable(true));
     }
   }
@@ -129,7 +145,8 @@ public class SccComputation extends
       Vertex<LongWritable, SccVertexValue, NullWritable> vertex) {
     SccVertexValue vertexValue = vertex.getValue();
     if (vertexValue.get() == vertex.getId().get()) {
-      sendMessageToAllParents(vertex, new LongWritable(vertexValue.get()));
+      messageValue.set(vertexValue.get());
+      sendMessageToAllParents(vertex, messageValue);
     }
   }
 
