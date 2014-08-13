@@ -15,26 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.giraph.conf;
-
-import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.io.WritableComparable;
-
 /**
- * Can be instantiated with ImmutableClassesGiraphConfiguration
- *
- * @param <I> Vertex id
- * @param <V> Vertex data
- * @param <E> Edge data
+ * Package for message store queue, that decouples netty threads from
+ * threads processing messages.
  */
-public interface ImmutableClassesGiraphConfigurable<
-    I extends WritableComparable, V extends Writable, E extends Writable>
-    extends GiraphConfigurationSettable<I, V, E> {
-  /**
-   * Return the configuration used by this object.
-   *
-   * @return Set configuration
-   */
-  ImmutableClassesGiraphConfiguration<I, V, E> getConf();
-}
+package org.apache.giraph.comm.messages.queue;

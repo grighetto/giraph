@@ -1,6 +1,22 @@
 Giraph Change Log
 
 Release 1.1.0 - unreleased
+  GIRAPH-943: Perf regression due to netty 4.0.21 (pavanka)
+
+  GIRAPH-935: Loosen modifiers when needed (ikabiljo via majakabiljo)
+
+  GIRAPH-937 - Upgrade Hive I/O to 0.26. (aching)
+
+  GIRAPH-893: Implement preLoad & postSave on workerObservers (pavanka)
+
+  GIRAPH-936: AsyncMessageStoreWrapper threads are not daemonized (edunov via majakabiljo)
+
+  GIRAPH-934: Allow having state in aggregators (ikabiljo via majakabiljo)
+
+  GIRAPH-932: Adding .arcconfig to GIRAPH for Arcanist support (aching)
+
+  GIRAPH-927: Decouple netty server threads from message processing (edunov via pavanka)  
+
   GIRAPH-924: Fix checkpointing (edunov via majakabiljo)
 
   GIRAPH-921: Create ByteValueVertex to store vertex values as bytes without object instance (akyrola via majakabiljo)

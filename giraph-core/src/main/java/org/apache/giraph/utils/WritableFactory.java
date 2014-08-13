@@ -15,26 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.giraph.conf;
+package org.apache.giraph.utils;
 
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.io.WritableComparable;
 
 /**
- * Can be instantiated with ImmutableClassesGiraphConfiguration
- *
- * @param <I> Vertex id
- * @param <V> Vertex data
- * @param <E> Edge data
+ * Factory that can be serialized.
+ * @param <T> Type of object factory creates
  */
-public interface ImmutableClassesGiraphConfigurable<
-    I extends WritableComparable, V extends Writable, E extends Writable>
-    extends GiraphConfigurationSettable<I, V, E> {
-  /**
-   * Return the configuration used by this object.
-   *
-   * @return Set configuration
-   */
-  ImmutableClassesGiraphConfiguration<I, V, E> getConf();
+public interface WritableFactory<T> extends Writable, Factory<T> {
+
 }

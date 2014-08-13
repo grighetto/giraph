@@ -38,8 +38,6 @@ import org.apache.giraph.partition.Partition;
 import org.apache.giraph.partition.PartitionOwner;
 import org.apache.giraph.partition.PartitionStats;
 import org.apache.giraph.partition.PartitionStore;
-import org.apache.giraph.time.SystemTime;
-import org.apache.giraph.time.Time;
 import org.apache.giraph.utils.CallableFactory;
 import org.apache.giraph.utils.MemoryUtils;
 import org.apache.giraph.utils.ProgressableUtils;
@@ -102,8 +100,6 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
   /** Name of metric for time from first message till last message flushed */
   public static final String TIMER_COMMUNICATION_TIME = "communication-time-ms";
 
-  /** Time instance used for timing in this class */
-  private static final Time TIME = SystemTime.get();
   /** Class logger */
   private static final Logger LOG = Logger.getLogger(GraphTaskManager.class);
   /** Coordination service worker */
@@ -259,6 +255,7 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
     if (checkTaskState()) {
       return;
     }
+    preLoadOnWorkerObservers();
     finishedSuperstepStats = serviceWorker.setup();
     if (collectInputSuperstepStats(finishedSuperstepStats)) {
       return;
@@ -304,6 +301,7 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
       }
       finishedSuperstepStats = completeSuperstepAndCollectStats(
         partitionStatsList, superstepTimerContext);
+
       // END of superstep compute loop
     }
 
@@ -833,6 +831,26 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
   }
 
   /**
+   * Executes preLoad() on worker observers.
+   */
+  private void preLoadOnWorkerObservers() {
+    for (WorkerObserver obs : serviceWorker.getWorkerObservers()) {
+      obs.preLoad();
+      context.progress();
+    }
+  }
+
+  /**
+   * Executes postSave() on worker observers.
+   */
+  private void postSaveOnWorkerObservers() {
+    for (WorkerObserver obs : serviceWorker.getWorkerObservers()) {
+      obs.postSave();
+      context.progress();
+    }
+  }
+
+  /**
    * Called by owner of this GraphTaskManager object on each compute node
    */
   public void cleanup()
@@ -846,6 +864,7 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
 
     if (serviceWorker != null) {
       serviceWorker.cleanup(finishedSuperstepStats);
+      postSaveOnWorkerObservers();
     }
     try {
       if (masterThread != null) {
