@@ -52,6 +52,11 @@ public class SccComputation extends
    */
   private LongWritable messageValue = new LongWritable();
 
+  /**
+   * Reusable object to encapsulate a parent vertex id.
+   */
+  private LongWritable parentId = new LongWritable();
+
   @Override
   public void preSuperstep() {
     IntWritable phaseInt = getAggregatedValue(PHASE);
@@ -201,7 +206,8 @@ public class SccComputation extends
       Vertex<LongWritable, SccVertexValue, NullWritable> vertex,
       LongWritable message) {
     for (Long id : vertex.getValue().getParents()) {
-      sendMessage(new LongWritable(id), message);
+      parentId.set(id);
+      sendMessage(parentId, message);
     }
   }
 }
